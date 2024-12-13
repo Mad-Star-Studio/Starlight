@@ -11,14 +11,11 @@ env:
 
 jobs:
     test:
-        runs-on: ubuntu-latest
+        runs-on: alpine-latest
 
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
-
-            - name: Install Cargo via Ubuntu package
-              run: sudo apt update && sudo apt-get install -y rustup
 
             - name: Install Rust
               run: rustup-init -y

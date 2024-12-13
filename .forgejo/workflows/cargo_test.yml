@@ -16,6 +16,8 @@ jobs:
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
+              with: 
+                repository: ${{ forgejo.repository }}
 
             - name: Cache dependencies
               uses: actions/cache@v2

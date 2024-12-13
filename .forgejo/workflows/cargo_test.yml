@@ -16,14 +16,27 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            - name: Install Cargo
-              uses: actions-rs/toolchain@v1
-              with:
-                  toolchain: stable
-                  override: true
+            - name: Install Cargo via Ubuntu package
+              run: sudo apt-get install -y cargo
 
-            - name: Install dependencies
+            - name: Cache dependencies (restore)
+              uses: actions/cache@v2
+              with:
+                path: |
+                  target
+                  ~/.cargo
+                key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+            - name: Update dependencies
               run: cargo fetch
+
+            - name: Cache dependencies (save)
+              uses: actions/cache/save@v4
+              with:
+                path: |
+                  target
+                  ~/.cargo
+                key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
             - name: Check formatting
               run: cargo fmt --check

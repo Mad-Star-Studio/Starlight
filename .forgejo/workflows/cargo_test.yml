@@ -14,14 +14,15 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v4
+            - name: Checkout Repository
+              uses: actions/checkout@v4
 
             - name: Install Cargo via Ubuntu package
               run: sudo apt-get install -y cargo
 
-            - name: Cache dependencies (restore)
-              uses: actions/cache/restore@v2
-              with:
+            - name: Cache dependencies
+              uses: actions/cache@v4
+              with: 
                 path: |
                   target
                   ~/.cargo
@@ -29,14 +30,6 @@ jobs:
 
             - name: Update dependencies
               run: cargo fetch
-
-            - name: Cache dependencies (save)
-              uses: actions/cache/save@v2
-              with:
-                path: |
-                  target
-                  ~/.cargo
-                key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
             - name: Check formatting
               run: cargo fmt --check

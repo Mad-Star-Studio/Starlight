@@ -1,0 +1,11 @@
+[package]
+name = "project_starlight"
+description = "A game made with Bevy"
+authors = ["Mad Star Studio, LLC"]
+license = "GPLv3"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+bevy = { version = "0.14", features = [] }

@@ -11,14 +11,11 @@ env:
 
 jobs:
     test:
-        runs-on: alpine-latest
+        runs-on: ubuntu-latest
 
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
-              with: 
-                github-server-url: https://git.smgames.club
-                repository: ${{ forgejo.repository }}
 
             - name: Cache dependencies
               uses: actions/cache@v2

@@ -1,6 +1,4 @@
-struct Runtime {
-
-}
+struct Runtime {}
 
 impl Runtime {
     pub fn new() -> Runtime {

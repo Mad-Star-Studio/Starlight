@@ -1,3 +1,6 @@
+use bevy::prelude::*;
+use project_starlight::runtime;
+
 fn main() {
-    println!("Hello, world!");
+    runtime::Runtime::new().run();
 }

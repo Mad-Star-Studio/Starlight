@@ -26,9 +26,16 @@ impl Default for WorldGeneratorPlugin {
 impl bevy::prelude::Plugin for WorldGeneratorPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<GenerateWorldSignal>();
+        app.add_event::<ChunkUpdatedEvent>();
+        app.add_event::<ChunkLoadedEvent>();
+        app.add_event::<ChunkGeneratedEvent>();
+        app.add_event::<ChunkDroppedEvent>();
         app.add_systems(Startup, sys_setup);
         app.add_systems(Update, sys_update);
         app.add_systems(Update, sys_generate_chunk);
+        // Visibility system
+        app.add_systems(Startup, vis::sys_setup);
+        app.add_systems(Update, vis::sys_update);
     }
 }
 
@@ -43,25 +50,25 @@ pub struct GenerateWorldSignal {
     pub y: i32,
     pub z: i32,
 }
-
+#[derive(Event, Debug, Clone)]
 pub struct ChunkUpdatedEvent {
     pub x: i32,
     pub y: i32,
     pub z: i32,
 }
-
+#[derive(Event, Debug, Clone)]
 pub struct ChunkLoadedEvent {
     pub x: i32,
     pub y: i32,
     pub z: i32,
 }
-
+#[derive(Event, Debug, Clone)]
 pub struct ChunkGeneratedEvent {
     pub x: i32,
     pub y: i32,
     pub z: i32,
 }
-
+#[derive(Event, Debug, Clone)]
 pub struct ChunkDroppedEvent {
     pub x: i32,
     pub y: i32,
@@ -100,48 +107,6 @@ pub fn sys_update(
     mut world: Query<&mut GameWorld>,
     mut ev_generate_world: EventWriter<GenerateWorldSignal>,
 ) {
-    let camera_translation = camera.single().0.translation;
-
-    // Submit load requests for chunks 8 chunks away from the camera, if they are not already loaded
-    let camera_grid_x = (camera_translation.x / 16.0).floor() as i32;
-    let camera_grid_y = (camera_translation.y / 16.0).floor() as i32;
-    let camera_grid_z = (camera_translation.z / 16.0).floor() as i32;
-
-    let mut world = world.single_mut();
-    let mut map = &world.map;
-
-    let mut requests: Arc<RwLock<Vec<GenerateWorldSignal>>> = Arc::new(RwLock::new(Vec::new()));
-
-    // Concurrently check if a chunk is loaded up to 8 chunks in each direction,
-    // and if not, submit a load request
-    let par_iter = (-5..5).into_par_iter();
-    par_iter.for_each(|x| {
-        let requests = requests.clone();
-        let x = x + camera_grid_x;
-        for y in -5..5 {
-            let y = y + camera_grid_y;
-            for z in -5..5 {
-                let z = z + camera_grid_z;
-                if !map.chunk_loaded(x, y, z) {
-                    let mut requests = requests.write().unwrap();
-                    requests.push(GenerateWorldSignal { x, y, z });
-                }
-            }
-        }
-    });
-
-    // Submit load requests
-    let requests = requests.read().unwrap();
-    for request in requests.iter() {
-        ev_generate_world.send(request.clone());
-    }
-
-    // Store last user position
-    world.prev_user_position = (
-        camera_translation.x,
-        camera_translation.y,
-        camera_translation.z,
-    );
 }
 
 fn task_generate_chunk(
@@ -158,6 +123,7 @@ fn task_generate_chunk(
 pub fn sys_generate_chunk(
     world: Query<&GameWorld>,
     mut ev_generate_world: EventReader<GenerateWorldSignal>,
+    mut ev_chunk_generated: EventWriter<ChunkGeneratedEvent>,
 ) {
     let world = world.single();
     use rayon::prelude::*;
@@ -166,7 +132,37 @@ pub fn sys_generate_chunk(
         .into_iter()
         .par_bridge()
         .into_par_iter();
+    let loaded_chunks: Mutex<Vec<(i32, i32, i32)>> = Mutex::new(Vec::new());
+    let offsets = vec![
+        (0, 0, 1),
+        (0, 0, -1),
+        (0, 1, 0),
+        (0, -1, 0),
+        (1, 0, 0),
+        (-1, 0, 0),
+    ];
+
+    let ev_chunk_generated = Mutex::new(ev_chunk_generated);
+
     par_iter.for_each(|signal| {
         task_generate_chunk(signal.x, signal.y, signal.z, world, &world.generator);
+        let mut loaded_chunks = loaded_chunks.lock().unwrap();
+        loaded_chunks.push((signal.x, signal.y, signal.z));
+
+        // Fire ChunkLoadedEvents for neighboring chunks if they have a buffer of one chunk at each cardinal direction
+        for (dx, dy, dz) in offsets.iter() {
+            if loaded_chunks.contains(&(signal.x + dx, signal.y + dy, signal.z + dz)) {
+                ev_chunk_generated
+                    .lock()
+                    .unwrap()
+                    .send(ChunkGeneratedEvent {
+                        x: signal.x + dx,
+                        y: signal.y + dy,
+                        z: signal.z + dz,
+                    });
+            }
+        }
     });
+
+    // Fire ChunkGeneratedEvents, only if there is a buffer of one chunk at each cardinal direction
 }

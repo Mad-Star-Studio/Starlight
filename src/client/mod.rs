@@ -6,6 +6,7 @@ use bevy::{
     text::TextFont,
     DefaultPlugins,
 };
+use bevy_egui::EguiPlugin;
 use bevy_flycam::PlayerPlugin;
 use bevy_meshem::prelude::{generate_voxel_mesh, Face::Top};
 
@@ -42,8 +43,9 @@ impl Runtime {
         };
         app.insert_resource(block_registry);
 
-        app.add_plugins(FpsOverlayPlugin::default());
+        //   app.add_plugins(FpsOverlayPlugin::default());
         app.add_plugins(renderer::WorldRenderer::default());
+        app.add_plugins(EguiPlugin);
         app.add_systems(Startup, systems::startup::setup_camera);
         app.add_systems(Startup, systems::test_scene::register);
         app.add_systems(Startup, systems::test_scene::setup);

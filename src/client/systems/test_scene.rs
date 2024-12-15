@@ -32,7 +32,7 @@ use crate::{
         MemoryWorld, SimplePerlinGenerator, World, WorldChunk, WorldChunkStatus, WorldChunkStorage,
         WorldGenerator,
     },
-    game::world_generator::GameWorld,
+    game::world_generator::{vis::WorldObserver, GameWorld},
 };
 
 const CUBE_SIZE: usize = 16;
@@ -118,6 +118,12 @@ pub fn setup(
         }
     }
 
+    // Camera3d
+    // commands.spawn((
+    //      Camera3d::default(),
+    //     Transform::from_xyz(0.0, 0.0, 10.0)
+    //));
+
     // directional 'sun' light
     commands.spawn((
         DirectionalLight {
@@ -171,9 +177,14 @@ pub fn update(
     mut world_local_query: Query<&WorldComponent>,
     mut world_query: Query<&mut GameWorld>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut query: Query<(&Camera3d, &Transform)>,
+    mut query: Query<(&Camera3d, &Transform, Entity)>,
     mut mesh_query: Query<(Entity, &Transform), With<Mesh3d>>,
 ) {
+    // Ensure all cameras have a WorldObserver component
+    for (_, _, camera) in query.iter() {
+        commands.entity(camera).insert_if_new(WorldObserver::new());
+    }
+
     // Spawn in new Voxel meshes if they don't exist and are close enough to the active Camera3
     // despawn Voxel meshes that are too far away from the player
 

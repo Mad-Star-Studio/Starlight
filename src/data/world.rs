@@ -1,5 +1,7 @@
 use std::{
-    cell::RefCell, fmt::{Display, Formatter}, sync::{Arc, Mutex, RwLock}
+    cell::RefCell,
+    fmt::{Display, Formatter},
+    sync::{Arc, Mutex, RwLock},
 };
 
 use bevy::prelude::{Component, Resource};
@@ -101,23 +103,19 @@ impl WorldChunkStorage {
 pub struct WorldChunkCoordinate {
     pub x: i32,
     pub y: i32,
-    pub z: i32
+    pub z: i32,
 }
 
 impl WorldChunkCoordinate {
     pub fn new(x: i32, y: i32, z: i32) -> Self {
-        Self {
-            x,
-            y,
-            z
-        }
+        Self { x, y, z }
     }
 
     pub fn from_world(x: f32, y: f32, z: f32) -> Self {
         Self {
             x: (x / 16.0).floor() as i32,
             y: (y / 16.0).floor() as i32,
-            z: (z / 16.0).floor() as i32
+            z: (z / 16.0).floor() as i32,
         }
     }
 }
@@ -165,13 +163,13 @@ impl SimplePerlinGenerator {
 
 impl WorldGenerator for SimplePerlinGenerator {
     fn generate_chunk(&self, w_x: i32, w_y: i32, w_z: i32) -> WorldChunkStorage {
-      //  let begin = std::time::Instant::now();
+        //  let begin = std::time::Instant::now();
         let mut chunk = WorldChunk::new();
         let mut empty = true;
 
         // Precompute scaling factor once to avoid repeating it
         let scale_factor = 1.0 / 64.0;
-        
+
         // Precompute the world coordinates
         let w_x = w_x as f64;
         let w_y = w_y as f64;
@@ -222,7 +220,6 @@ impl WorldGenerator for SimplePerlinGenerator {
 /* -------------------------------------------------------------------------- */
 /*                       In-memory World Implementation                       */
 /* -------------------------------------------------------------------------- */
-
 
 pub struct MemoryWorldData {
     pub chunks: Vec<(i32, i32, i32, Arc<RwLock<WorldChunkStorage>>)>,

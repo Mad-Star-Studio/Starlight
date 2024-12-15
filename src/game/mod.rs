@@ -1,5 +1,8 @@
 use bevy::{
-    app::{App, Startup, Update}, prelude::Event, transform::systems, DefaultPlugins
+    app::{App, Startup, Update},
+    prelude::Event,
+    transform::systems,
+    DefaultPlugins,
 };
 use bevy_flycam::PlayerPlugin;
 use world_generator::{GenerateWorldSignal, WorldGeneratorPlugin};

@@ -1,6 +1,10 @@
 use std::sync::{Arc, Mutex, RwLock};
 
-use bevy::{app::{App, Plugins, Startup, Update}, prelude::{Commands, Component, Event, EventReader, EventWriter, Query, Res}, tasks::AsyncComputeTaskPool};
+use bevy::{
+    app::{App, Plugins, Startup, Update},
+    prelude::{Commands, Component, Event, EventReader, EventWriter, Query, Res},
+    tasks::AsyncComputeTaskPool,
+};
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 
 use crate::data::world::{self, MemoryWorld, SimplePerlinGenerator, World, WorldGenerator};
@@ -11,9 +15,7 @@ pub mod vis;
 /*                                   Plugin                                   */
 /* -------------------------------------------------------------------------- */
 
-pub struct WorldGeneratorPlugin {
-
-}
+pub struct WorldGeneratorPlugin {}
 
 impl Default for WorldGeneratorPlugin {
     fn default() -> Self {
@@ -33,7 +35,6 @@ impl bevy::prelude::Plugin for WorldGeneratorPlugin {
 /* -------------------------------------------------------------------------- */
 /*                                   Events                                   */
 /* -------------------------------------------------------------------------- */
-
 
 // TODO: There is a better way to do this without using an event
 #[derive(Event, Debug, Clone)]
@@ -111,7 +112,7 @@ pub fn sys_update(
 
     let mut requests: Arc<RwLock<Vec<GenerateWorldSignal>>> = Arc::new(RwLock::new(Vec::new()));
 
-    // Concurrently check if a chunk is loaded up to 8 chunks in each direction, 
+    // Concurrently check if a chunk is loaded up to 8 chunks in each direction,
     // and if not, submit a load request
     let par_iter = (-5..5).into_par_iter();
     par_iter.for_each(|x| {
@@ -136,7 +137,11 @@ pub fn sys_update(
     }
 
     // Store last user position
-    world.prev_user_position = (camera_translation.x, camera_translation.y, camera_translation.z);
+    world.prev_user_position = (
+        camera_translation.x,
+        camera_translation.y,
+        camera_translation.z,
+    );
 }
 
 fn task_generate_chunk(
@@ -146,7 +151,7 @@ fn task_generate_chunk(
     world: &GameWorld,
     generator: &SimplePerlinGenerator,
 ) {
-    let chunk = generator.generate_chunk(y*16, z*16, x*16);
+    let chunk = generator.generate_chunk(y * 16, z * 16, x * 16);
     world.map.add_chunk(chunk, x, y, z);
 }
 
@@ -156,7 +161,11 @@ pub fn sys_generate_chunk(
 ) {
     let world = world.single();
     use rayon::prelude::*;
-    let par_iter = ev_generate_world.read().into_iter().par_bridge().into_par_iter();
+    let par_iter = ev_generate_world
+        .read()
+        .into_iter()
+        .par_bridge()
+        .into_par_iter();
     par_iter.for_each(|signal| {
         task_generate_chunk(signal.x, signal.y, signal.z, world, &world.generator);
     });

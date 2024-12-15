@@ -15,9 +15,7 @@ pub struct WorldObserver {
     pub status: WorldObserverStatus,
 }
 
-pub fn sys_setup() {
-
-}
+pub fn sys_setup() {}
 
 #[inline]
 fn poke_chunk(world: &dyn World) -> bool {
@@ -31,11 +29,8 @@ pub fn sys_update(
 ) {
     for (entity, observer) in query.iter_mut() {
         match observer.status {
-            WorldObserverStatus::NeedsRefresh => {
-                
-            },
-            WorldObserverStatus::FromPosition(pos) => {
-            },
+            WorldObserverStatus::NeedsRefresh => {}
+            WorldObserverStatus::FromPosition(pos) => {}
         }
     }
 }

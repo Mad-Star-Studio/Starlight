@@ -1,21 +1,36 @@
 use bevy::{
-    app::{App, Plugin, Startup, Update}, asset::{AssetServer, Assets, Handle}, color::{palettes::css::WHEAT, Color}, math::Vec3, pbr::{MeshMaterial3d, StandardMaterial}, prelude::{AlphaMode, Camera3d, Commands, Component, Entity, EventWriter, Mesh, Mesh3d, Query, Res, ResMut, Transform, With}
+    app::{App, Plugin, Startup, Update},
+    asset::{AssetServer, Assets, Handle},
+    color::{palettes::css::WHEAT, Color},
+    math::Vec3,
+    pbr::{MeshMaterial3d, StandardMaterial},
+    prelude::{
+        AlphaMode, Camera3d, Commands, Component, Entity, EventWriter, Mesh, Mesh3d, Query, Res,
+        ResMut, Transform, With,
+    },
 };
 use bevy_meshem::{
-    prelude::{introduce_adjacent_chunks, mesh_grid, Face::{Back, Bottom, Forward, Left, Right, Top}, MeshMD, MeshingAlgorithm},
+    prelude::{
+        introduce_adjacent_chunks, mesh_grid,
+        Face::{Back, Bottom, Forward, Left, Right, Top},
+        MeshMD, MeshingAlgorithm,
+    },
     Dimensions, VoxelRegistry,
 };
 
 use crate::{
     data::world::{World, WorldChunk, WorldChunkStatus, WorldChunkStorage},
-    game::{registry::BlockRegistry, world_generator::{GameWorld, GenerateWorldSignal}},
+    game::{
+        registry::BlockRegistry,
+        world_generator::{GameWorld, GenerateWorldSignal},
+    },
 };
 
 #[derive(Component)]
 struct WorldRendererChunk {
     pub position: (i32, i32, i32),
     pub meta: MeshMD<<BlockRegistry as VoxelRegistry>::Voxel>,
-    pub mesh: Handle<Mesh>
+    pub mesh: Handle<Mesh>,
 }
 
 #[derive(Component)]
@@ -44,14 +59,7 @@ impl Plugin for WorldRenderer {
     }
 }
 
-fn adjacent_add(
-    x: i32,
-    y: i32,
-    z: i32,
-
-    world: &GameWorld,
-    block_registry: &BlockRegistry,
-) {
+fn adjacent_add(x: i32, y: i32, z: i32, world: &GameWorld, block_registry: &BlockRegistry) {
     let direction_table = {
         [
             (0, 0, 1),
@@ -62,30 +70,20 @@ fn adjacent_add(
             (-1, 0, 0),
         ]
     };
-    let face_table = {
-        [
-            Right,
-            Left,
-            Top,
-            Bottom,
-            Forward,
-            Back,
-        ]
-    };
+    let face_table = { [Right, Left, Top, Bottom, Forward, Back] };
 
     for i in 0..6 {
         let direction = direction_table[i];
         let face = face_table[i];
-
-
     }
 }
 
-fn sys_setup(mut commands: Commands,
+fn sys_setup(
+    mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
-   // let texture_handle = asset_server.load("textures/block/default_cobble.png");
+    // let texture_handle = asset_server.load("textures/block/default_cobble.png");
     let cobble = materials.add(Color::Srgba(WHEAT));
 
     let mut renderer = WorldRenderer::default();
@@ -123,11 +121,14 @@ fn sys_update(
             renderer.chunks.retain(|c| c.position != chunk.1.position);
         }
     }
-    
+
     // Identify chunks that should be loaded in by x y z
     for x in camera_grid_x - renderer.render_distance..camera_grid_x + renderer.render_distance {
-        for y in camera_grid_y - renderer.render_distance..camera_grid_y + renderer.render_distance {
-            for z in camera_grid_z - renderer.render_distance..camera_grid_z + renderer.render_distance {
+        for y in camera_grid_y - renderer.render_distance..camera_grid_y + renderer.render_distance
+        {
+            for z in
+                camera_grid_z - renderer.render_distance..camera_grid_z + renderer.render_distance
+            {
                 let mut found = false;
                 // Check if chunk is already loaded (in ECS)
                 for chunk in render_chunks.iter_mut() {
@@ -137,9 +138,8 @@ fn sys_update(
                     }
                 }
 
-
                 if !found {
-                    match world.map.chunk_at(x, y,z) {
+                    match world.map.chunk_at(x, y, z) {
                         crate::data::world::WorldChunkStatus::Stored(stored) => {
                             let r = stored.read().unwrap();
                             if r.is_loaded() {
@@ -174,7 +174,7 @@ fn sys_update(
                                                 z as f32 * WorldChunk::SIZE as f32,
                                             )),
                                             MeshMaterial3d(renderer.material.clone()),
-                                            new_chunk
+                                            new_chunk,
                                         ));
                                     }
                                     None => {
@@ -185,7 +185,7 @@ fn sys_update(
                         }
                         WorldChunkStatus::Unloaded => {
                             continue;
-                        },
+                        }
                     }
                 }
             }

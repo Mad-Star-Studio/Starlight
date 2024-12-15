@@ -2,7 +2,7 @@ use std::{
     cell::RefCell, fmt::{Display, Formatter}, sync::{Arc, Mutex, RwLock}
 };
 
-use bevy::prelude::Component;
+use bevy::prelude::{Component, Resource};
 use noise::{NoiseFn, Perlin};
 
 /* -------------------------------------------------------------------------- */
@@ -97,7 +97,7 @@ impl WorldChunkStorage {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
 pub struct WorldChunkCoordinate {
     pub x: i32,
     pub y: i32,
@@ -129,7 +129,7 @@ impl Display for WorldChunkCoordinate {
 }
 
 ///
-pub trait World {
+pub trait World: Resource {
     fn add_chunk(&self, data: WorldChunkStorage, x: i32, y: i32, z: i32);
     fn unload_chunk(&self, x: i32, y: i32, z: i32);
     fn chunk_at(&self, x: i32, y: i32, z: i32) -> WorldChunkStatus;
@@ -223,6 +223,7 @@ impl WorldGenerator for SimplePerlinGenerator {
 /*                       In-memory World Implementation                       */
 /* -------------------------------------------------------------------------- */
 
+
 pub struct MemoryWorldData {
     pub chunks: Vec<(i32, i32, i32, Arc<RwLock<WorldChunkStorage>>)>,
 }
@@ -243,6 +244,7 @@ impl MemoryWorldData {
     }
 }
 
+#[derive(Resource)]
 pub struct MemoryWorld {
     data: Arc<RwLock<MemoryWorldData>>,
     // Must last at least the lifetime of the world, but not static

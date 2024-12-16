@@ -99,7 +99,7 @@ impl WorldChunkStorage {
     }
 }
 
-#[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct WorldChunkCoordinate {
     pub x: i32,
     pub y: i32,

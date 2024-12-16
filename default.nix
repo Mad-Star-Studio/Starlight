@@ -41,6 +41,10 @@ rustPlatform.buildRustPackage rec {
     allowBuiltinFetchGit = true;
   };
 
+  shellHook = ''
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${builtins.toString (pkgs.lib.makeLibraryPath buildInputs)}";
+  '';
+
   meta = with stdenv.lib; {
     homepage = "";
     description = "";

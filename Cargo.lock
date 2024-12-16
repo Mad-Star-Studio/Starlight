@@ -3707,24 +3707,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "afbdc74edc00b6f6a218ca6a5364d6226a259d4b8ea1af4a0ea063f27e179f4d"
 
 [[package]]
-name = "project_starlight"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_egui",
- "bevy_flycam",
- "bevy_meshem",
- "bevy_render",
- "egui",
- "egui_dock",
- "egui_plot",
- "humantime",
- "noise",
- "rand",
- "rayon",
-]
-
-[[package]]
 name = "quick-xml"
 version = "0.36.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4186,6 +4168,24 @@ name = "stackfuture"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6eae92052b72ef70dafa16eddbabffc77e5ca3574be2f7bc1127b36f0a7ad7f2"
+
+[[package]]
+name = "starlight_engine"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_egui",
+ "bevy_flycam",
+ "bevy_meshem",
+ "bevy_render",
+ "egui",
+ "egui_dock",
+ "egui_plot",
+ "humantime",
+ "noise",
+ "rand",
+ "rayon",
+]
 
 [[package]]
 name = "static_assertions"

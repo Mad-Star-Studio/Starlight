@@ -1,5 +1,5 @@
 [package]
-name = "project_starlight"
+name = "starlight_engine"
 description = "A game made with Bevy"
 authors = ["Mad Star Studio, LLC"]
 license = "GPLv3"

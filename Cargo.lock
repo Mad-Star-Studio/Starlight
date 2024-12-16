@@ -926,7 +926,7 @@ dependencies = [
 [[package]]
 name = "bevy_meshem"
 version = "0.4.0"
-source = "git+https://github.com/TheFelidae/Meshem.git#5eb795752ed9df3579da1760f867d4693dc27881"
+source = "git+https://github.com/TheFelidae/Meshem.git?rev=0bc7f88#0bc7f8874701f8cdced1679c6213aaea40166c92"
 dependencies = [
  "bevy",
  "rand",

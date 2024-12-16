@@ -13,7 +13,7 @@ bevy_render = "0.15.0"
 bevy_flycam = "*"
 rand = "*"
 noise = "0.9"
-bevy_meshem = { git = "https://github.com/TheFelidae/Meshem.git" }
+bevy_meshem = { git = "https://github.com/TheFelidae/Meshem.git", rev = "0bc7f88" }
 rayon = "1.5.1"
 bevy_egui = "0.31.1"
 egui = "*"

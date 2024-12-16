@@ -49,9 +49,7 @@ impl Runtime {
         app.add_systems(Startup, systems::startup::setup_camera);
         app.add_systems(Startup, systems::test_scene::register);
         app.add_systems(Startup, systems::test_scene::setup);
-        app.add_systems(Startup, systems::debug::setup_debug_menu);
         app.add_systems(Update, systems::test_scene::update);
-        app.add_systems(Update, systems::debug::update_debug_menu);
         app.run();
     }
 }

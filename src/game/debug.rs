@@ -1,24 +1,57 @@
 use std::{hash::{DefaultHasher, Hash, Hasher}, ops::RangeInclusive};
 
 use bevy::{
-    color::palettes::css::{GREEN_YELLOW, MAROON, WHEAT},
-    prelude::{BuildChildren, ChildBuild, Commands, Component, Entity, Query, ResMut, Text},
-    text::{Text2d, TextColor, TextFont, TextLayout, TextSpan},
-    time::Time,
-    ui::{
+    app::{Startup, Update}, color::palettes::css::{GREEN_YELLOW, MAROON, WHEAT}, prelude::{BuildChildren, ChildBuild, Commands, Component, Entity, Query, ResMut, Text}, text::{Text2d, TextColor, TextFont, TextLayout, TextSpan}, time::Time, ui::{
         AlignItems, BackgroundColor, FlexDirection, JustifyContent, Node, PositionType, UiRect, Val,
-    },
-    utils::default, window::Monitor,
+    }, utils::default, window::Monitor
 };
 use bevy_egui::{EguiContext, EguiContexts};
 use egui::{Color32, Style, Ui, Vec2};
+use egui_dock::{DockArea, TabViewer};
 use egui_plot::{AxisHints, Bar, BarChart, Corner, GridMark, Legend, Line, Plot, PlotPoint, PlotPoints};
 
 use crate::{data::world, game::perf::{Profiler, ProfilerPoint}};
 
+pub struct DebugPlugin;
+
+impl bevy::prelude::Plugin for DebugPlugin {
+    fn build(&self, app: &mut bevy::prelude::App) {
+        app.add_systems(Startup, setup_debug_menu);
+        app.add_systems(Update, update_debug_menu);
+    }
+}
+
+impl Default for DebugPlugin {
+    fn default() -> Self {
+        DebugPlugin {}
+    }
+}
+
 #[derive(Component)]
 pub struct DebugMenuComponent {
     pub show: bool,
+}
+
+pub trait DebugMenuTab {
+    fn title(&mut self) -> String;
+    fn ui(&mut self, ui: &mut egui::Ui);
+}
+
+pub struct DebugMenu {
+    pub tabs: Vec<usize>,
+}
+
+impl TabViewer for DebugMenu {
+    type Tab = usize;
+
+    fn title(&mut self, tab: &mut Self::Tab) -> egui::WidgetText {
+        format!("Tab {tab}").into()
+    }
+
+    fn ui(&mut self, ui: &mut egui::Ui, tab: &mut Self::Tab) {
+        ui.label(format!("Content of tab {tab}"));
+    }
+
 }
 
 pub fn setup_debug_menu(mut commands: Commands) {
@@ -216,6 +249,12 @@ pub fn update_debug_menu(
                     plot_fn.line(chart);
                 }
             });
+        });
+        
+        let mut ctx = egui_contexts.ctx_mut();
+
+        let docking_window = egui::Window::new("Docking").show(&mut ctx, |ui| {
+            
         });
     }
 

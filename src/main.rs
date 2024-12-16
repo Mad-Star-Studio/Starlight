@@ -11,7 +11,7 @@ use bevy::{
     text::TextFont,
     utils::default,
 };
-use project_starlight::client;
+use starlight_engine::client;
 
 fn main() {
     client::Runtime::new().run();

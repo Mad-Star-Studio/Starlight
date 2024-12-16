@@ -19,6 +19,7 @@ The world pipeline has these steps:
     > This is responsible for maintaining a buffer of loaded chunks around those presented.
     - Consumes `ObservationLoad` and `ObservationUnload`
     - Submits `WorldMgrLoad` and `WorldMgrUnload`
+    - Submits `WorldMgrChunkReady` when a chunk is ready to be presented.
 4. ***Population***: We load or generate contents of chunks into memory.
     > Mutates: World chunk list
     - Consumes `WorldMgrLoad`

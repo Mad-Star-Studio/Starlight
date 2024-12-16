@@ -29,10 +29,9 @@ use bevy_render::mesh::MeshVertexAttribute;
 
 use crate::{
     data::world::{
-        MemoryWorld, SimplePerlinGenerator, World, WorldChunk, WorldChunkStatus, WorldChunkStorage,
-        WorldGenerator,
+        MapChunk, MapChunkStatus, MapChunkStorage, MapGenerator, MemoryWorld, SimplePerlinGenerator, World
     },
-    game::world_generator::{vis::WorldObserver, GameWorld},
+    game::{world_generator::GameWorld, world_observation::{MapObserver, WorldObservationPluginState}},
 };
 
 const CUBE_SIZE: usize = 16;
@@ -173,6 +172,7 @@ pub fn setup(
 
 pub fn update(
     mut commands: Commands,
+    mut observer_state: Res<WorldObservationPluginState>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut world_local_query: Query<&WorldComponent>,
     mut world_query: Query<&mut GameWorld>,
@@ -180,16 +180,14 @@ pub fn update(
     mut query: Query<(&Camera3d, &Transform, Entity)>,
     mut mesh_query: Query<(Entity, &Transform), With<Mesh3d>>,
 ) {
-    // Ensure all cameras have a WorldObserver component
-    for (_, _, camera) in query.iter() {
-        commands.entity(camera).insert_if_new(WorldObserver::new());
-    }
-
     // Spawn in new Voxel meshes if they don't exist and are close enough to the active Camera3
     // despawn Voxel meshes that are too far away from the player
 
     // query the active camera3d
     let camera = query.single();
+
+    commands.entity(camera.2).insert_if_new(MapObserver::new());
+
     // Get its transform component
     let camera_pos = camera.1;
 

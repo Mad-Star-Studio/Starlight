@@ -22,7 +22,7 @@ use bevy_meshem::{
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::{
-    data::world::{World, WorldChunk, WorldChunkStatus, WorldChunkStorage},
+    data::world::{World, MapChunk, MapChunkStatus, MapChunkStorage},
     game::{
         registry::BlockRegistry,
         world_generator::{ChunkDroppedEvent, ChunkGeneratedEvent, GameWorld, GenerateWorldSignal},
@@ -49,7 +49,7 @@ impl WorldRenderer {
         WorldRenderer {
             chunks: Vec::new(),
             render_distance: 3,
-            dimensions: (WorldChunk::SIZE, WorldChunk::SIZE, WorldChunk::SIZE),
+            dimensions: (MapChunk::SIZE, MapChunk::SIZE, MapChunk::SIZE),
             material: Handle::default(),
         }
     }
@@ -237,7 +237,7 @@ fn sys_on_chunk_generated(
         let y = event.y;
         let z = event.z;
         match chunk {
-            WorldChunkStatus::Stored(stored) => {
+            MapChunkStatus::Stored(stored) => {
                 let mut loaded = false;
                 {
                     let r = stored.read().unwrap();
@@ -249,7 +249,7 @@ fn sys_on_chunk_generated(
                     let r_arc_3 = r_arc.read().unwrap();
                     let data = r_arc_3.data();
                     match mesh_grid(
-                        (WorldChunk::SIZE, WorldChunk::SIZE, WorldChunk::SIZE),
+                        (MapChunk::SIZE, MapChunk::SIZE, MapChunk::SIZE),
                         &[],
                         data,
                         block_registry,
@@ -267,7 +267,7 @@ fn sys_on_chunk_generated(
                                 let adj_chunk =
                                     world.map.chunk_at(x + offset.0, y + offset.1, z + offset.2);
                                 match adj_chunk {
-                                    WorldChunkStatus::Stored(adj_stored) => {
+                                    MapChunkStatus::Stored(adj_stored) => {
                                         let adj_r = adj_stored.read().unwrap();
                                         if adj_r.is_loaded() {
                                             let adj_r_arc = adj_r.unwrap().clone();
@@ -304,16 +304,16 @@ fn sys_on_chunk_generated(
                                 }
                             }*/
 
-                            println!("Meshed chunk at {}, {}, {}", x, y, z);
+                      //      println!("Meshed chunk at {}, {}, {}", x, y, z);
 
                             let mesh = mesh_registry.lock().unwrap().add(mesh);
                             let mut commands = commands.lock().unwrap();
                             commands.spawn((
                                 Mesh3d(mesh),
                                 Transform::from_translation(Vec3::new(
-                                    x as f32 * WorldChunk::SIZE as f32,
-                                    y as f32 * WorldChunk::SIZE as f32,
-                                    z as f32 * WorldChunk::SIZE as f32,
+                                    x as f32 * MapChunk::SIZE as f32,
+                                    y as f32 * MapChunk::SIZE as f32,
+                                    z as f32 * MapChunk::SIZE as f32,
                                 )),
                                 MeshMaterial3d(renderer.single().material.clone()),
                                 WorldRendererChunk {
@@ -327,7 +327,7 @@ fn sys_on_chunk_generated(
                     }
                 }
             }
-            WorldChunkStatus::Unloaded => {}
+            MapChunkStatus::Unloaded => {}
         }
     });
 }

@@ -2,7 +2,7 @@ use bevy::prelude::{Component, Mesh, Resource};
 use bevy_meshem::{VoxelMesh, VoxelRegistry};
 use bevy_render::mesh::MeshVertexAttribute;
 
-use crate::data::world::WorldNode;
+use crate::data::world::MapBlock;
 
 #[derive(Resource)]
 pub struct BlockRegistry {
@@ -10,7 +10,7 @@ pub struct BlockRegistry {
 }
 
 impl VoxelRegistry for BlockRegistry {
-    type Voxel = WorldNode;
+    type Voxel = MapBlock;
 
     fn get_mesh(&self, voxel: &Self::Voxel) -> VoxelMesh<&Mesh> {
         if voxel.id == 0 {

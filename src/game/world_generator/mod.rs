@@ -2,14 +2,14 @@ use std::sync::{Arc, Mutex, RwLock};
 
 use bevy::{
     app::{App, Plugins, Startup, Update},
-    prelude::{Commands, Component, Event, EventReader, EventWriter, Query, Res},
+    prelude::{Commands, Component, Event, EventReader, EventWriter, Query, Res, ResMut},
     tasks::AsyncComputeTaskPool,
 };
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 
-use crate::data::world::{self, MemoryWorld, SimplePerlinGenerator, World, WorldGenerator};
+use crate::data::world::{self, MemoryWorld, SimplePerlinGenerator, World, MapGenerator};
 
-pub mod vis;
+use super::{perf::Profiler, world_observation::ObservationLoadEvent};
 
 /* -------------------------------------------------------------------------- */
 /*                                   Plugin                                   */
@@ -33,9 +33,6 @@ impl bevy::prelude::Plugin for WorldGeneratorPlugin {
         app.add_systems(Startup, sys_setup);
         app.add_systems(Update, sys_update);
         app.add_systems(Update, sys_generate_chunk);
-        // Visibility system
-        app.add_systems(Startup, vis::sys_setup);
-        app.add_systems(Update, vis::sys_update);
     }
 }
 
@@ -122,9 +119,11 @@ fn task_generate_chunk(
 
 pub fn sys_generate_chunk(
     world: Query<&GameWorld>,
-    mut ev_generate_world: EventReader<GenerateWorldSignal>,
-    mut ev_chunk_generated: EventWriter<ChunkGeneratedEvent>,
+    mut profiler: ResMut<Profiler>,
+    mut ev_generate_world: EventReader<ObservationLoadEvent>,
+    ev_chunk_generated: EventWriter<ChunkGeneratedEvent>,
 ) {
+    let _profiler = profiler.record("sys_generate_chunk");
     let world = world.single();
     use rayon::prelude::*;
     let par_iter = ev_generate_world
@@ -145,24 +144,31 @@ pub fn sys_generate_chunk(
     let ev_chunk_generated = Mutex::new(ev_chunk_generated);
 
     par_iter.for_each(|signal| {
-        task_generate_chunk(signal.x, signal.y, signal.z, world, &world.generator);
+        task_generate_chunk(signal.chunk_pos.x, signal.chunk_pos.y, signal.chunk_pos.z, world, &world.generator);
         let mut loaded_chunks = loaded_chunks.lock().unwrap();
-        loaded_chunks.push((signal.x, signal.y, signal.z));
+        loaded_chunks.push((signal.chunk_pos.x, signal.chunk_pos.y, signal.chunk_pos.z));
 
         // Fire ChunkLoadedEvents for neighboring chunks if they have a buffer of one chunk at each cardinal direction
-        for (dx, dy, dz) in offsets.iter() {
-            if loaded_chunks.contains(&(signal.x + dx, signal.y + dy, signal.z + dz)) {
-                ev_chunk_generated
-                    .lock()
-                    .unwrap()
-                    .send(ChunkGeneratedEvent {
-                        x: signal.x + dx,
-                        y: signal.y + dy,
-                        z: signal.z + dz,
-                    });
-            }
-        }
+        //for (dx, dy, dz) in offsets.iter() {
+       //     if loaded_chunks.contains(&(signal.x + dx, signal.y + dy, signal.z + dz)) {
+             //   ev_chunk_generated
+               //     .lock()
+                //    .unwrap()
+                //    .send(ObservationLoadEvent {
+                //        x: signal.x + dx,
+                 //       y: signal.y + dy,
+                 //       z: signal.z + dz,
+                 //   });
+      //      }
+    //    }
     });
 
     // Fire ChunkGeneratedEvents, only if there is a buffer of one chunk at each cardinal direction
+    let loaded_chunks = loaded_chunks.lock().unwrap();
+    for (x, y, z) in loaded_chunks.iter() {
+        ev_chunk_generated
+            .lock()
+            .unwrap()
+            .send(ChunkGeneratedEvent { x: *x, y: *y, z: *z });
+    }
 }

@@ -17,11 +17,11 @@ pub type WorldNodeId = u8;
 ///
 /// A node is a single block in the world. It has an id that represents the type of block it is.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct WorldNode {
+pub struct MapBlock {
     pub id: WorldNodeId,
 }
 
-impl WorldNode {
+impl MapBlock {
     pub fn new(id: WorldNodeId) -> Self {
         Self { id }
     }
@@ -34,115 +34,88 @@ impl WorldNode {
 /// A chunk of the world.
 ///
 /// A chunk is a 16x16x16 area of the world. It is the smallest unit of the world that can be loaded and unloaded.
-pub struct WorldChunk {
-    pub data: [WorldNode; Self::VOLUME],
+pub struct MapChunk {
+    pub data: [MapBlock; Self::VOLUME],
 }
 
-impl WorldChunk {
+impl MapChunk {
     pub const SIZE: usize = 16;
     pub const VOLUME: usize = Self::SIZE * Self::SIZE * Self::SIZE;
 
     pub fn new() -> Self {
         Self {
-            data: [WorldNode::air(); Self::VOLUME],
+            data: [MapBlock::air(); Self::VOLUME],
         }
     }
 
     #[inline]
-    pub fn node_at(&self, x: usize, y: usize, z: usize) -> &WorldNode {
+    pub fn node_at(&self, x: usize, y: usize, z: usize) -> &MapBlock {
         &self.data[x * Self::SIZE * Self::SIZE + y * Self::SIZE + z]
     }
     #[inline]
-    pub fn node_at_mut(&mut self, x: usize, y: usize, z: usize) -> &mut WorldNode {
+    pub fn node_at_mut(&mut self, x: usize, y: usize, z: usize) -> &mut MapBlock {
         &mut self.data[x * Self::SIZE * Self::SIZE + y * Self::SIZE + z]
     }
-    pub fn data(&self) -> &[WorldNode; Self::VOLUME] {
+    pub fn data(&self) -> &[MapBlock; Self::VOLUME] {
         &self.data
     }
 }
 
-pub enum WorldChunkStatus {
+pub enum MapChunkStatus {
     /// A loaded chunk that can't be modified
-    Stored(Arc<RwLock<WorldChunkStorage>>),
+    Stored(Arc<RwLock<MapChunkStorage>>),
     /// A chunk that has been generated but not loaded
     Unloaded,
 }
 
-pub enum WorldChunkStorage {
-    Loaded(Arc<RwLock<WorldChunk>>),
+pub enum MapChunkStorage {
+    Loaded(Arc<RwLock<MapChunk>>),
     Empty,
 }
 
-impl WorldChunkStorage {
+impl MapChunkStorage {
     #[inline]
-    pub fn unwrap(&self) -> Arc<RwLock<WorldChunk>> {
+    pub fn unwrap(&self) -> Arc<RwLock<MapChunk>> {
         match self {
-            WorldChunkStorage::Loaded(chunk) => chunk.clone(),
-            WorldChunkStorage::Empty => panic!("Attempted to unwrap an empty chunk"),
+            MapChunkStorage::Loaded(chunk) => chunk.clone(),
+            MapChunkStorage::Empty => panic!("Attempted to unwrap an empty chunk"),
         }
     }
 
     #[inline]
     pub fn is_loaded(&self) -> bool {
         match self {
-            WorldChunkStorage::Loaded(_) => true,
-            WorldChunkStorage::Empty => false,
+            MapChunkStorage::Loaded(_) => true,
+            MapChunkStorage::Empty => false,
         }
     }
 
     #[inline]
     pub fn is_empty(&self) -> bool {
         match self {
-            WorldChunkStorage::Loaded(_) => false,
-            WorldChunkStorage::Empty => true,
+            MapChunkStorage::Loaded(_) => false,
+            MapChunkStorage::Empty => true,
         }
-    }
-}
-
-#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct WorldChunkCoordinate {
-    pub x: i32,
-    pub y: i32,
-    pub z: i32,
-}
-
-impl WorldChunkCoordinate {
-    pub fn new(x: i32, y: i32, z: i32) -> Self {
-        Self { x, y, z }
-    }
-
-    pub fn from_world(x: f32, y: f32, z: f32) -> Self {
-        Self {
-            x: (x / 16.0).floor() as i32,
-            y: (y / 16.0).floor() as i32,
-            z: (z / 16.0).floor() as i32,
-        }
-    }
-}
-
-impl Display for WorldChunkCoordinate {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "({}, {}, {})", self.x, self.y, self.z)
     }
 }
 
 ///
 pub trait World: Resource {
-    fn add_chunk(&self, data: WorldChunkStorage, x: i32, y: i32, z: i32);
+    fn add_chunk(&self, data: MapChunkStorage, x: i32, y: i32, z: i32);
     fn unload_chunk(&self, x: i32, y: i32, z: i32);
-    fn chunk_at(&self, x: i32, y: i32, z: i32) -> WorldChunkStatus;
+    fn chunk_at(&self, x: i32, y: i32, z: i32) -> MapChunkStatus;
     #[inline]
     fn chunk_loaded(&self, x: i32, y: i32, z: i32) -> bool {
         match self.chunk_at(x, y, z) {
-            WorldChunkStatus::Stored(_) => true,
-            WorldChunkStatus::Unloaded => false,
+            MapChunkStatus::Stored(_) => true,
+            MapChunkStatus::Unloaded => false,
         }
     }
     fn save(&self, path: &str);
 }
 
-pub trait WorldGenerator {
-    fn generate_chunk(&self, x: i32, y: i32, z: i32) -> WorldChunkStorage;
+pub trait MapGenerator {
+    fn generate_chunk(&self, x: i32, y: i32, z: i32) -> MapChunkStorage;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -161,10 +134,10 @@ impl SimplePerlinGenerator {
     }
 }
 
-impl WorldGenerator for SimplePerlinGenerator {
-    fn generate_chunk(&self, w_x: i32, w_y: i32, w_z: i32) -> WorldChunkStorage {
+impl MapGenerator for SimplePerlinGenerator {
+    fn generate_chunk(&self, w_x: i32, w_y: i32, w_z: i32) -> MapChunkStorage {
         //  let begin = std::time::Instant::now();
-        let mut chunk = WorldChunk::new();
+        let mut chunk = MapChunk::new();
         let mut empty = true;
 
         // Precompute scaling factor once to avoid repeating it
@@ -176,7 +149,7 @@ impl WorldGenerator for SimplePerlinGenerator {
         let w_z = w_z as f64;
 
         // Get the chunk size and avoid redundant lookups
-        let chunk_size = WorldChunk::SIZE as f64;
+        let chunk_size = MapChunk::SIZE as f64;
 
         // Iterate over each chunk's x, y, and z
         let mut n_x = 0.;
@@ -195,7 +168,7 @@ impl WorldGenerator for SimplePerlinGenerator {
                     // If the height is above the threshold, set the chunk node
                     if height * 30.0 > n_x + w_x {
                         *chunk.node_at_mut(n_x as usize, n_y as usize, n_z as usize) =
-                            WorldNode::new(1);
+                            MapBlock::new(1);
                         empty = false;
                     }
                     n_z += 1.;
@@ -210,9 +183,9 @@ impl WorldGenerator for SimplePerlinGenerator {
 
         // Return chunk storage based on whether it's empty or not
         if empty {
-            WorldChunkStorage::Empty
+            MapChunkStorage::Empty
         } else {
-            WorldChunkStorage::Loaded(Arc::new(RwLock::new(chunk)))
+            MapChunkStorage::Loaded(Arc::new(RwLock::new(chunk)))
         }
     }
 }
@@ -222,7 +195,7 @@ impl WorldGenerator for SimplePerlinGenerator {
 /* -------------------------------------------------------------------------- */
 
 pub struct MemoryWorldData {
-    pub chunks: Vec<(i32, i32, i32, Arc<RwLock<WorldChunkStorage>>)>,
+    pub chunks: Vec<(i32, i32, i32, Arc<RwLock<MapChunkStorage>>)>,
 }
 
 impl MemoryWorldData {
@@ -230,12 +203,12 @@ impl MemoryWorldData {
         Self { chunks: Vec::new() }
     }
 
-    pub fn add_chunk(&mut self, data: WorldChunkStorage, x: i32, y: i32, z: i32) {
+    pub fn add_chunk(&mut self, data: MapChunkStorage, x: i32, y: i32, z: i32) {
         let chunk = match data {
-            WorldChunkStorage::Loaded(chunk) => {
-                Arc::new(RwLock::new(WorldChunkStorage::Loaded(chunk)))
+            MapChunkStorage::Loaded(chunk) => {
+                Arc::new(RwLock::new(MapChunkStorage::Loaded(chunk)))
             }
-            WorldChunkStorage::Empty => Arc::new(RwLock::new(WorldChunkStorage::Empty)),
+            MapChunkStorage::Empty => Arc::new(RwLock::new(MapChunkStorage::Empty)),
         };
         self.chunks.push((x, y, z, chunk));
     }
@@ -265,13 +238,13 @@ impl World for MemoryWorld {
             .retain(|(cx, cy, cz, _)| *cx != x || *cy != y || *cz != z);
     }
 
-    fn add_chunk(&self, data: WorldChunkStorage, x: i32, y: i32, z: i32) {
+    fn add_chunk(&self, data: MapChunkStorage, x: i32, y: i32, z: i32) {
         let mut w = self.data.write().unwrap();
         let chunk = match data {
-            WorldChunkStorage::Loaded(chunk) => {
-                Arc::new(RwLock::new(WorldChunkStorage::Loaded(chunk)))
+            MapChunkStorage::Loaded(chunk) => {
+                Arc::new(RwLock::new(MapChunkStorage::Loaded(chunk)))
             }
-            WorldChunkStorage::Empty => Arc::new(RwLock::new(WorldChunkStorage::Empty)),
+            MapChunkStorage::Empty => Arc::new(RwLock::new(MapChunkStorage::Empty)),
         };
         w.chunks.push((x, y, z, chunk));
     }
@@ -282,17 +255,17 @@ impl World for MemoryWorld {
     /// If the chunk is loaded and mutable, it will return a mutable reference to the chunk.
     /// If the chunk is empty, it will return an empty chunk.
     /// If the chunk is unloaded, it will return an unloaded chunk.
-    fn chunk_at(&self, x: i32, y: i32, z: i32) -> WorldChunkStatus {
+    fn chunk_at(&self, x: i32, y: i32, z: i32) -> MapChunkStatus {
         {
             let r = self.data.read().unwrap();
             for (cx, cy, cz, chunk) in &r.chunks {
                 if *cx == x && *cy == y && *cz == z {
-                    return WorldChunkStatus::Stored(chunk.clone());
+                    return MapChunkStatus::Stored(chunk.clone());
                 }
             }
         }
 
-        WorldChunkStatus::Unloaded
+        MapChunkStatus::Unloaded
     }
 
     fn save(&self, path: &str) {

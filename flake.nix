@@ -21,7 +21,13 @@
     devShell = pkgs.mkShell {
       CARGO_INSTALL_ROOT = "${toString ./.}/.cargo";
 
-      buildInputs = with pkgs; [ cargo rustc git ];
+      buildInputs = with pkgs; [ cargo rustc git 
+        alsa-lib vulkan-loader
+        xorg.libX11 xorg.libXcursor xorg.libXi xorg.libXrandr # To use the x11 feature
+        libxkbcommon wayland # To use the wayland feature
+        renderdoc 
+      ];
+      nativeBuildInputs = [ pkgs.pkg-config ];
     };
   });
 }

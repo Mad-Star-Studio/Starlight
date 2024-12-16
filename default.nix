@@ -28,17 +28,21 @@ rustPlatform.buildRustPackage rec {
 
   src = gitignoreSource ./.;
 
-  buildInputs = [
+  buildInputs = with pkgs; [
     udev alsa-lib vulkan-loader
     xorg.libX11 xorg.libXcursor xorg.libXi xorg.libXrandr # To use the x11 feature
     libxkbcommon wayland # To use the wayland feature
     renderdoc
   ];
-  nativeBuildInputs = [ pkgconfig ];
+  nativeBuildInputs = with pkgs; [ pkg-config ];
+
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+  };
 
   meta = with stdenv.lib; {
     homepage = "";
     description = "";
-    license = licenses.mit;
+    license = "MIT License";
   };
 }

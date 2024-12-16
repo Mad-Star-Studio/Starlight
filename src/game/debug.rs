@@ -1,7 +1,7 @@
 use std::{hash::{DefaultHasher, Hash, Hasher}, ops::RangeInclusive};
 
 use bevy::{
-    app::{Startup, Update}, color::palettes::css::{GREEN_YELLOW, MAROON, WHEAT}, prelude::{BuildChildren, ChildBuild, Commands, Component, Entity, Query, ResMut, Text}, text::{Text2d, TextColor, TextFont, TextLayout, TextSpan}, time::Time, ui::{
+    app::{PostUpdate, Startup, Update}, color::palettes::css::{GREEN_YELLOW, MAROON, WHEAT}, prelude::{BuildChildren, ChildBuild, Commands, Component, Entity, Query, ResMut, Text}, text::{Text2d, TextColor, TextFont, TextLayout, TextSpan}, time::Time, ui::{
         AlignItems, BackgroundColor, FlexDirection, JustifyContent, Node, PositionType, UiRect, Val,
     }, utils::default, window::Monitor
 };
@@ -179,11 +179,12 @@ pub fn update_debug_menu(
                 // Iterate over all the perf monitors
                 let mut bar_charts: Vec<BarChart> = Vec::new();
                 let mut avg_charts: Vec<Line> = Vec::new();
-                let mut avg_y_accum: Vec<f32> = Vec::new();
+                let mut avg_accumulator: Vec<f32> = Vec::new();
                 // fill with zeroes
                 for _ in 0..profiler.max_ticks + 1 {
-                    avg_y_accum.push(0.0);
+                    avg_accumulator.push(0.0);
                 }
+                
                 for monitor in profiler.iter() {
                     // Determine color based on name string (hash)
                     let mut hasher = DefaultHasher::new();
@@ -199,7 +200,7 @@ pub fn update_debug_menu(
                     // TODO: Find a way to *accurately* calculate the width of the text.
                     // This is a hacky way to do it, but it works for now.
                     plot_fn.text(
-                        egui_plot::Text::new(PlotPoint::new(-1. * text.len() as f32 - 1.1, avg + avg_y_accum[0]), text)
+                        egui_plot::Text::new(PlotPoint::new(-1. * text.len() as f32 - 1.1, avg + avg_accumulator[0]), text)
                         .color(color)
                         .name(monitor.name.clone())
                     );
@@ -207,34 +208,36 @@ pub fn update_debug_menu(
                     let mut chart: Vec<Bar> = Vec::new();
                     let mut avg_chart: Vec<[f64; 2]> = Vec::new();
                     
-                    // extend to label
-                    avg_chart.push([-4.0, (avg + avg_y_accum[0]) as f64]);
-
-                    let mut i = 0;
-                    for (_, point) in monitor.points.iter().enumerate() {
-                        let y = point.1.duration().as_secs_f64();
+                    for (i, point) in monitor.history().iter().enumerate() {
+                        let y = point.duration().as_secs_f64();
                     
-                        let x= point.1.age as f64;
+                        let x= point.age as f64;
 
                         chart.push(Bar::new(x, y));
-                        avg_chart.push([x, (point.0 + avg_y_accum[i]) as f64]);
+                        avg_chart.push([x, (point.average + avg_accumulator[i]) as f64]);
                         // Accumulate
-                        avg_y_accum[i] += point.0;
-                        i += 1;
+                        avg_accumulator[i] += point.average;
                     }
 
                     let chart = BarChart::new(chart)
                         .color(color)
                         .width(0.5)
+                        .highlight(false)
                         .name(monitor.name.clone())
                         // &[&BarGraph]
                         .stack_on(&bar_charts.iter().map(|c| c).collect::<Vec<&BarChart>>());
 
                     bar_charts.push(chart);
+
+                    if avg_chart.len() == 1 {
+                        avg_chart[0][0] = -4.0;
+                    }
+
                     avg_charts.push(
                         Line::new(avg_chart)
                             .color(color)
                             .name(monitor.name.clone())
+                            .highlight(true)
                             .style(egui_plot::LineStyle::Dashed { length: (20.) }
                         )
                     );

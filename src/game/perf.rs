@@ -5,6 +5,7 @@ use bevy::{app::{App, Last, Plugin, PostUpdate, Startup}, prelude::{Commands, Re
 #[derive(Debug, Clone)]
 pub struct ProfilerPoint {
     pub age: u32,
+    pub average: f32,
     pub begin: Instant,
     pub end: Instant
 }
@@ -23,6 +24,7 @@ impl ProfilerPoint {
     pub fn new() -> ProfilerPoint {
         ProfilerPoint {
             age: 0,
+            average: 0.0,
             begin: Instant::now(),
             end: Instant::now()
         }
@@ -40,21 +42,33 @@ impl ProfilerPoint {
     }
 }
 
+
+/// A monitor for a specific task.
+/// 
+/// This monitor keeps track of the average duration of a task and its history.
 #[derive(Debug)]
 pub struct ProfilerMonitor {
     pub name: String,
-    pub points: Vec<(f32, ProfilerPoint)>
+    pub points: Vec<ProfilerPoint>
 }
 
 impl ProfilerMonitor {
+    /// Returns the average duration of the task, based on the history of durations.
     pub fn average(&self) -> f32 {
-        let sum: f32 = self.points.iter().map(|(_, point)| {
+        let sum: f32 = self.points.iter().map(|point| {
             point.duration().as_secs_f32()
         }).sum();
         if (self.points.len() as f32) == 0.0 {
             return 0.0;
         }
         sum / self.points.len() as f32
+    }
+
+    /// Returns the history of the task.
+    /// 
+    /// This will not include the latest point
+    pub fn history(&self) -> Vec<&ProfilerPoint> {
+        self.points.iter().skip(1).collect()
     }
 }
 
@@ -74,7 +88,8 @@ impl Drop for ProfilerRecordGuard<'_> {
     fn drop(&mut self) {
         self.point.end = Instant::now();
         let monitor = self.profiler.monitors.get_mut(&self.monitor).unwrap();
-        monitor.points.push((monitor.average(), self.point.clone()));
+        self.point.average = monitor.average();
+        monitor.points.push(self.point.clone());
     }
 }
 
@@ -97,6 +112,7 @@ impl Profiler {
             profiler: self,
             point: ProfilerPoint {
                 age: 0,
+                average: 0.0,
                 begin: Instant::now(),
                 end: Instant::now()
             }
@@ -106,7 +122,10 @@ impl Profiler {
     pub fn record_manual(&mut self, name: &str, point: ProfilerPoint) {
         self.ensure_monitor(name);
         let monitor = self.monitors.get_mut(name).unwrap();
-        monitor.points.push((monitor.average(), point));
+        let mut point = point;
+        point.average = monitor.average();
+
+        monitor.points.push(point);
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &ProfilerMonitor> {
@@ -161,7 +180,7 @@ fn sys_update(profiler: ResMut<Profiler>) {
             let profiler = profiler.lock().unwrap();
             remove_indexes = profiler.monitors.iter().enumerate().flat_map(|(i, monitor)| {
                 monitor.1.points.iter().enumerate().filter_map(|(j, point)| {
-                    if point.1.age >= profiler.max_ticks {
+                    if point.age >= profiler.max_ticks {
                         Some((i, j))
                     } else {
                         None
@@ -180,7 +199,7 @@ fn sys_update(profiler: ResMut<Profiler>) {
         // Update the age of all the points
         for monitor in profiler.monitors.values_mut() {
             for point in monitor.points.iter_mut() {
-                point.1.age += 1;
+                point.age += 1;
             }
         }
     }

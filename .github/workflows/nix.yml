@@ -1,4 +1,6 @@
 name: Nix Package
+permissions:
+  contents: read
 
 on:
   push:
@@ -17,7 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install Nix
-      uses: cachix/install-nix-action@v27
+      uses: cachix/install-nix-action@14344b39ca74ae462b171571696461d555318cc3
       with:
         nix_path: nixpkgs=channel:nixos-unstable
     - name: Build

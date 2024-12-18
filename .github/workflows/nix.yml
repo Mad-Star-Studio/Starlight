@@ -1,4 +1,6 @@
 name: Nix Package
+permissions:
+  contents: read
 
 on:
   push:

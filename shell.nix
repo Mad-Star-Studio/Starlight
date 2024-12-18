@@ -1,16 +1,18 @@
-let
-  # Pinned nixpkgs, 24.11
-  pkgs = import (fetchTarball("https://github.com/NixOS/nixpkgs/archive/8b27c1239e5c421a2bbc2c65d52e4a6fbf2ff296.tar.gz")) {};
+{ pkgs ? import <nixpkgs> { } }:
 
-in pkgs.mkShell {
-  buildInputs = [ 
-    # Rust tooling
-    pkgs.cargo pkgs.rustc 
-    # Workflow tools
-    pkgs.act
-    # System libraries needed
-    pkgs.pkg-config
-    pkgs.alsa-lib
-    pkgs.udev
+with pkgs;
+
+mkShell rec {
+  nativeBuildInputs = [
+    pkg-config
   ];
+  buildInputs = [
+    cargo rustc
+    udev alsa-lib vulkan-loader
+    xorg.libX11 xorg.libXcursor xorg.libXi xorg.libXrandr # To use the x11 feature
+    libxkbcommon wayland # To use the wayland feature
+    renderdoc
+    wayland
+  ];
+  LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;
 }

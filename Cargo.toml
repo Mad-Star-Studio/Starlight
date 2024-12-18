@@ -1,5 +1,5 @@
 [package]
-name = "project_starlight"
+name = "starlight_engine"
 description = "A game made with Bevy"
 authors = ["Mad Star Studio, LLC"]
 license = "GPLv3"
@@ -8,4 +8,15 @@ edition = "2021"
 publish = false
 
 [dependencies]
-bevy = { version = "0.14", features = [] }
+bevy = { version = "0.15", features = ["bevy_dev_tools"] }
+bevy_render = "0.15.0"
+bevy_flycam = "*"
+rand = "*"
+noise = "0.9"
+bevy_meshem = { git = "https://github.com/TheFelidae/Meshem.git", rev = "0bc7f88" }
+rayon = "1.5.1"
+bevy_egui = "0.31.1"
+egui = "*"
+egui_plot = "0.29"
+egui_dock = "0.14"
+humantime = "2.1"

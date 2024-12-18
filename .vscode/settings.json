@@ -1,6 +1,11 @@
 {
     "cSpell.words": [
         "Luanti",
-        "Minetest"
-    ]
+        "Minetest",
+        "perlin"
+    ],
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+        "README.md": "*.md"
+    }
 }

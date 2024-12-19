@@ -18,7 +18,7 @@
 
     defaultPackage = packages.starlight_engine;
 
-    devShell = pkgs.mkShell {
+    devShell = pkgs.mkShell rec {
       CARGO_INSTALL_ROOT = "${toString ./.}/.cargo";
 
       buildInputs = with pkgs; [ cargo rustc git 
@@ -28,6 +28,9 @@
         libxkbcommon wayland # To use the wayland feature
       ];
       nativeBuildInputs = [ pkgs.pkg-config ];
+      env = {
+        LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath buildInputs}";
+      };
     };
   });
 }

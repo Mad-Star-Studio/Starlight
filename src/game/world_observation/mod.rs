@@ -80,8 +80,8 @@ pub struct ObservationUnloadEvent {
 /*                                   Plugin                                   */
 /* -------------------------------------------------------------------------- */
 
-use bevy::{app::{App, Plugin, Startup, Update}, ecs::component::StorageType, log::{debug, info, tracing_subscriber::field::debug}, prelude::{Commands, Component, Entity, Event, Query, RemovedComponents, Res, ResMut, Resource, Transform}};
-use bevy_egui::{EguiContext, EguiContexts};
+use bevy::{app::{App, Plugin, Startup, Update}, ecs::component::StorageType, prelude::{Commands, Component, Entity, Event, Query, RemovedComponents, ResMut, Resource, Transform}};
+use bevy_egui::EguiContexts;
 use egui::mutex::Mutex;
 
 use crate::data::{MapChunkCoordinate, MapCoordinate};

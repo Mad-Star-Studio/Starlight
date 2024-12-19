@@ -1,4 +1,4 @@
-use bevy::prelude::{Component, Mesh, Resource};
+use bevy::prelude::{Mesh, Resource};
 use bevy_meshem::{VoxelMesh, VoxelRegistry};
 use bevy_render::mesh::MeshVertexAttribute;
 

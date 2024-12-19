@@ -1,6 +1,6 @@
-use std::{collections::HashMap, sync::{Arc, Mutex, RwLock}, time::Instant};
+use std::{collections::HashMap, sync::Mutex, time::Instant};
 
-use bevy::{app::{App, Last, Plugin, PostUpdate, Startup}, prelude::{Commands, ResMut, Resource}};
+use bevy::{app::{App, Plugin, PostUpdate, Startup}, prelude::{Commands, ResMut, Resource}};
 
 #[derive(Debug, Clone)]
 pub struct ProfilerPoint {
@@ -163,7 +163,7 @@ impl Default for ProfilerPlugin {
 /*                                   Systems                                  */
 /* -------------------------------------------------------------------------- */
 
-fn sys_setup(mut commands: Commands) {
+fn sys_setup(commands: Commands) {
 
 }
 

@@ -1,13 +1,5 @@
-use bevy::{
-    app::{App, Startup, Update},
-    dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
-    ecs::schedule::ScheduleLabel,
-    prelude::Schedule,
-    text::TextFont,
-    DefaultPlugins,
-};
+use bevy::app::{Startup, Update};
 use bevy_egui::EguiPlugin;
-use bevy_flycam::PlayerPlugin;
 use bevy_meshem::prelude::{generate_voxel_mesh, Face::Top};
 
 use crate::game::{self, registry::BlockRegistry};

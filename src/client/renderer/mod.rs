@@ -1,4 +1,4 @@
-use std::sync::{Mutex, RwLock};
+use std::sync::Mutex;
 
 use bevy::{
     app::{App, Plugin, Startup, Update},
@@ -7,8 +7,8 @@ use bevy::{
     math::Vec3,
     pbr::{MeshMaterial3d, StandardMaterial},
     prelude::{
-        AlphaMode, Camera3d, Commands, Component, Entity, EventReader, EventWriter, Mesh, Mesh3d,
-        Query, Res, ResMut, Transform, With,
+        Camera3d, Commands, Component, Entity, EventReader, EventWriter, Mesh, Mesh3d,
+        Query, Res, ResMut, Transform,
     },
 };
 use bevy_meshem::{
@@ -19,10 +19,10 @@ use bevy_meshem::{
     },
     Dimensions, VoxelRegistry,
 };
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use rayon::iter::ParallelIterator;
 
 use crate::{
-    data::world::{World, MapChunk, MapChunkStatus, MapChunkStorage},
+    data::world::{World, MapChunk, MapChunkStatus},
     game::{
         registry::BlockRegistry,
         world_generator::{ChunkDroppedEvent, ChunkGeneratedEvent, GameWorld, GenerateWorldSignal},
@@ -96,14 +96,14 @@ fn sys_setup(
 }
 
 fn sys_update(
-    mut commands: Commands,
+    commands: Commands,
     block_registry: bevy::prelude::Res<BlockRegistry>,
-    mut render_chunks: Query<(Entity, &mut WorldRendererChunk)>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut renderer: Query<&mut WorldRenderer>,
+    render_chunks: Query<(Entity, &mut WorldRendererChunk)>,
+    meshes: ResMut<Assets<Mesh>>,
+    renderer: Query<&mut WorldRenderer>,
     camera: Query<(&Camera3d, &Transform)>,
     world: Query<&GameWorld>,
-    mut request_world: EventWriter<GenerateWorldSignal>,
+    request_world: EventWriter<GenerateWorldSignal>,
 ) {
     /*let mut renderer = renderer.single_mut();
     let world = world.single();
@@ -206,7 +206,7 @@ fn sys_update(
 }
 
 fn sys_on_chunk_generated(
-    mut commands: Commands,
+    commands: Commands,
     mut ev_chunk_generated: EventReader<ChunkGeneratedEvent>,
     data: ResMut<Assets<Mesh>>,
     block_registry: Res<BlockRegistry>,

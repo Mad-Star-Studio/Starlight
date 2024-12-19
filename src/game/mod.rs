@@ -1,14 +1,11 @@
-use std::time::SystemTime;
 
 use bevy::{
-    app::{App, Startup, Update},
-    prelude::Event,
-    transform::systems,
+    app::App,
     DefaultPlugins,
 };
 use bevy_flycam::PlayerPlugin;
 use perf::ProfilerPlugin;
-use world_generator::{GenerateWorldSignal, WorldGeneratorPlugin};
+use world_generator::WorldGeneratorPlugin;
 use world_worldmgr::WorldManagerPlugin;
 
 pub mod registry;

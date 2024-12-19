@@ -1,13 +1,12 @@
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::Mutex;
 
 use bevy::{
-    app::{App, Plugins, Startup, Update},
-    prelude::{Commands, Component, Event, EventReader, EventWriter, Query, Res, ResMut},
-    tasks::AsyncComputeTaskPool,
+    app::{App, Startup, Update},
+    prelude::{Commands, Component, Event, EventReader, EventWriter, Query, ResMut},
 };
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 
-use crate::data::world::{self, MemoryWorld, SimplePerlinGenerator, World, MapGenerator};
+use crate::data::world::{MemoryWorld, SimplePerlinGenerator, World, MapGenerator};
 
 use super::{perf::Profiler, world_observation::ObservationLoadEvent};
 
@@ -99,10 +98,10 @@ pub fn sys_setup(mut commands: Commands) {
 }
 
 pub fn sys_update(
-    mut commands: Commands,
+    commands: Commands,
     camera: Query<(&bevy::prelude::Transform, &bevy::prelude::Camera3d)>,
-    mut world: Query<&mut GameWorld>,
-    mut ev_generate_world: EventWriter<GenerateWorldSignal>,
+    world: Query<&mut GameWorld>,
+    ev_generate_world: EventWriter<GenerateWorldSignal>,
 ) {
 }
 

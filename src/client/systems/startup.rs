@@ -1,8 +1,3 @@
-use bevy::{
-    app::App,
-    asset::AssetServer,
-    prelude::{Camera3d, Commands, Res, Transform},
-    tasks::futures_lite::io::AssertAsync,
-};
+use bevy::prelude::Commands;
 
-pub fn setup_camera(mut commands: Commands) {}
+pub fn setup_camera(commands: Commands) {}

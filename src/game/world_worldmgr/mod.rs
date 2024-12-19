@@ -2,7 +2,7 @@
 /*                                   Plugin                                   */
 /* -------------------------------------------------------------------------- */
 
-use bevy::{app::{App, Startup, Update}, prelude::{Commands, Component, Event, EventReader, IntoSystemConfigs, ResMut, Resource}};
+use bevy::{app::{App, Startup, Update}, prelude::{Commands, Event, EventReader, IntoSystemConfigs, ResMut, Resource}};
 
 use crate::data::MapChunkCoordinate;
 
@@ -75,8 +75,8 @@ fn sys_setup(mut commands: Commands) {
 }
 
 fn sys_update(
-    mut commands: Commands,
-    mut world_manager: ResMut<WorldManager>,
+    commands: Commands,
+    world_manager: ResMut<WorldManager>,
     mut profiler: ResMut<Profiler>,
     ) {
     let _profiler = profiler.record("WorldManager::sys_update");
@@ -87,7 +87,7 @@ fn sys_update(
 /* -------------------------------------------------------------------------- */
 
 fn sys_world_manager_load_event(
-    mut commands: Commands, 
+    commands: Commands, 
     world_manager: ResMut<WorldManager>,
     mut event: EventReader<WorldManagerLoadRequest>
 ) {
@@ -98,9 +98,9 @@ fn sys_world_manager_load_event(
 }
 
 fn sys_world_manager_unload_event(
-    mut commands: Commands,
+    commands: Commands,
     world_manager: ResMut<WorldManager>,
-    mut event: EventReader<WorldManagerUnloadRequest>
+    event: EventReader<WorldManagerUnloadRequest>
 ) {
 }
 

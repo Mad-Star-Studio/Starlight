@@ -1,16 +1,16 @@
-use std::{hash::{DefaultHasher, Hash, Hasher}, ops::RangeInclusive};
+use std::{hash::{DefaultHasher, Hasher}, ops::RangeInclusive};
 
 use bevy::{
-    app::{PostUpdate, Startup, Update}, color::palettes::css::{GREEN_YELLOW, MAROON, WHEAT}, prelude::{BuildChildren, ChildBuild, Commands, Component, Entity, Query, ResMut, Text}, text::{Text2d, TextColor, TextFont, TextLayout, TextSpan}, time::Time, ui::{
-        AlignItems, BackgroundColor, FlexDirection, JustifyContent, Node, PositionType, UiRect, Val,
-    }, utils::default, window::Monitor
+    app::{Startup, Update}, prelude::{ChildBuild, Commands, Component, Entity, Query, ResMut, Text}, time::Time, ui::{
+        Node, PositionType, Val,
+    }, utils::default
 };
-use bevy_egui::{EguiContext, EguiContexts};
-use egui::{Color32, Style, Ui, Vec2};
-use egui_dock::{DockArea, TabViewer};
-use egui_plot::{AxisHints, Bar, BarChart, Corner, GridMark, Legend, Line, Plot, PlotPoint, PlotPoints};
+use bevy_egui::EguiContexts;
+use egui::{Color32, Vec2};
+use egui_dock::TabViewer;
+use egui_plot::{AxisHints, Bar, BarChart, GridMark, Legend, Line, Plot, PlotPoint};
 
-use crate::{data::world, game::perf::{Profiler, ProfilerPoint}};
+use crate::game::perf::{Profiler, ProfilerPoint};
 
 pub struct DebugPlugin;
 

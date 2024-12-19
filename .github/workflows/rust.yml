@@ -20,6 +20,12 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install system dependencies
       run: sudo apt-get install -y libasound2-dev libudev-dev
+    - name: Cache build artifacts
+      uses: actions/cache@v4.2.0
+      with:
+        key: "rust-cache"
+        path: |
+          **/target
     - name: Build
       run: cargo build --verbose
     - name: Run tests

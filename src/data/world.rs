@@ -1,10 +1,6 @@
-use std::{
-    cell::RefCell,
-    fmt::{Display, Formatter},
-    sync::{Arc, Mutex, RwLock},
-};
+use std::sync::{Arc, RwLock};
 
-use bevy::prelude::{Component, Resource};
+use bevy::prelude::Resource;
 use noise::{NoiseFn, Perlin};
 
 /* -------------------------------------------------------------------------- */

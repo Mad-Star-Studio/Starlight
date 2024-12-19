@@ -41,6 +41,13 @@ jobs:
       - name: Install required cargo
         run: cargo install clippy-sarif sarif-fmt
 
+      - name: Cache build artifacts
+        uses: actions/cache@v4.2.0
+        with:
+          key: "rust-cache"
+          path: |
+            **/target
+
       - name: Run rust-clippy
         run:
           cargo clippy

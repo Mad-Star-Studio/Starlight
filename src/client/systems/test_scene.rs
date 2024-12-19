@@ -1,35 +1,25 @@
-use std::{
-    f32::consts::PI,
-    sync::{Arc, RwLock, RwLockReadGuard},
-};
+use std::f32::consts::PI;
 
 use bevy::{
-    asset::{AssetServer, Handle, LoadState, RenderAssetUsages},
+    asset::{AssetServer, Handle, LoadState},
     pbr::{light_consts, CascadeShadowConfigBuilder, DirectionalLight},
     prelude::{
-        AlphaMode, App, Assets, Camera, Camera3d, Circle, Color, Commands, Component, Cuboid,
-        DefaultPlugins, Entity, Mesh, Mesh3d, MeshMaterial3d, PointLight, Quat, Query, Res, ResMut,
+        AlphaMode, Assets, Camera3d, Circle, Color, Commands, Component, Cuboid, Entity, Mesh, Mesh3d, MeshMaterial3d, Quat, Query, Res, ResMut,
         StandardMaterial, Transform, Vec3, With,
     },
-    render::{
-        mesh::{Indices, VertexAttributeValues},
-        render_resource::Texture,
-    },
+    render::mesh::VertexAttributeValues,
     utils::default,
 };
 use bevy_meshem::{
     prelude::{
-        generate_voxel_mesh, mesh_grid,
-        Face::{Bottom, Top},
         MeshMD, MeshingAlgorithm,
     },
-    Dimensions, VoxelMesh, VoxelRegistry,
+    Dimensions,
 };
-use bevy_render::mesh::MeshVertexAttribute;
 
 use crate::{
     data::world::{
-        MapChunk, MapChunkStatus, MapChunkStorage, MapGenerator, MemoryWorld, SimplePerlinGenerator, World
+        MemoryWorld, SimplePerlinGenerator
     },
     game::{world_generator::GameWorld, world_observation::{MapObserver, WorldObservationPluginState}},
 };
@@ -48,7 +38,7 @@ struct Meshy {
     meta: MeshMD<u32>,
 }
 
-pub fn register(mut commands: Commands) {
+pub fn register(commands: Commands) {
     // add BlockRegistry resource
     /*  let block_registry = BlockRegistry {
         block: generate_voxel_mesh(
@@ -172,13 +162,13 @@ pub fn setup(
 
 pub fn update(
     mut commands: Commands,
-    mut observer_state: Res<WorldObservationPluginState>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut world_local_query: Query<&WorldComponent>,
-    mut world_query: Query<&mut GameWorld>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut query: Query<(&Camera3d, &Transform, Entity)>,
-    mut mesh_query: Query<(Entity, &Transform), With<Mesh3d>>,
+    observer_state: Res<WorldObservationPluginState>,
+    meshes: ResMut<Assets<Mesh>>,
+    world_local_query: Query<&WorldComponent>,
+    world_query: Query<&mut GameWorld>,
+    materials: ResMut<Assets<StandardMaterial>>,
+    query: Query<(&Camera3d, &Transform, Entity)>,
+    mesh_query: Query<(Entity, &Transform), With<Mesh3d>>,
 ) {
     // Spawn in new Voxel meshes if they don't exist and are close enough to the active Camera3
     // despawn Voxel meshes that are too far away from the player
